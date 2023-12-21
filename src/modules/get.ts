@@ -51,6 +51,17 @@ export class GET {
                     }
                     break;
                 }
+                case "admins": {
+                    const admins = await this.mongo.getAdmins().catch(err => {
+                        console.trace(err);
+                        res.status(500).send({ success: false, err });
+                    });
+                    if (admins) {
+                        res.status(200).send({ admins });
+                    }
+                    break;
+                }
+                
             }
 
         }

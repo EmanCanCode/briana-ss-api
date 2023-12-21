@@ -87,6 +87,27 @@ export class POST {
                 }
                 break;
             }
+            case 'createAdmin': {
+                try {
+                    const { username, password } = POST.admin;
+                    let result = await this.mongo.createAdmin(username, password);
+                    res.status(200).send({ success: true, result });
+                } catch(err) {
+                    console.trace({ err });
+                    res.status(500).send({ success: false, err });
+                }
+                break;
+            }
+            case 'deleteAdmin': {
+                try {
+                    let result = await this.mongo.deleteAdmin(POST.username);
+                    res.status(200).send({ success: true, result });
+                } catch(err) {
+                    console.trace({ err });
+                    res.status(500).send({ success: false, err });
+                }
+                break;
+            }
         }
     }
 }
