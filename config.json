@@ -1,0 +1,19 @@
+{
+    "hosts": {
+        "production": {
+            "httpPort": 80,
+            "httpsPort": 443
+        },
+        "development": {
+            "httpPort": 3000,
+            "httpsPort": 3030
+        }
+    },
+    "database": {
+        "host": "",
+        "database": "",
+        "user": "",
+        "password": ""
+    },
+    "socketio": false
+}
