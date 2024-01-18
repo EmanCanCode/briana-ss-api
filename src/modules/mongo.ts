@@ -2,17 +2,14 @@
 import fs from 'fs-extra';
 const path = require('path');
 import {MongoClient, Db} from 'mongodb';
-import { Child } from '../types/interfaces';
-import { Parent } from '../types/interfaces';
+import { ISpacial, IUser, LoginCredentials } from '../types/interfaces';
 
-// const uri = "mongodb+srv://dtaghavi:Science101\!\!\!@rarified.ftvyf.mongodb.net/Rarified?retryWrites=true&w=majority";
-const uri = 'mongodb+srv://eman:3ll1pt1cCvrv%23@sundayschool.hrlqdx4.mongodb.net/';
-
+const uri = 'mongodb+srv://eman:3ll1pt1cCvrv%23@serverlessinstance0.zntjh3q.mongodb.net/';
 const client = new MongoClient(uri);
 
-
+// okay the only reason why i use try catches is so i can go faster, i should update to get more specific errors and handle them better
 export class Mongo {
-    dbName: string = "SundaySchool";
+    dbName: string = "dl";
     db?: Db;
     ready: boolean = false;
 
@@ -45,335 +42,185 @@ export class Mongo {
         console.log("MongoDB Connection Closed Successfully");
     }
 
-    // Create a new collection with a specific type
-    async createCollection(name: string) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-            await this.db.createCollection(name);
+    async getUser(_id: any) {
+        try {
+            const db = await this.connect();
+            const users = db.collection<IUser>('users');
+            const user = await users.findOne<IUser>({ _id });
             await this.close();
-            resolve(`Collection ${name} Created Successfully`);
-        });
+            if (!user) {
+                console.log("User does not exist");
+                throw new Error("User does not exist");
+            }
+            return user;
+        } catch (err) {
+            console.log("Error: ", err);
+            await this.close();
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
 
-    // ADMINS
-
-    async createAdmin(
-        username: string,
-        password: string
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let admin = await this.db.collection('admins').findOne({ username }).catch(err => {
-                reject(err);
-            });
-
-            if(admin) {
-                await this.close();
-                return;
-            }
-
-            let result = await this.db.collection('admins').insertOne({ username, password });
-            if(!result) {
-                await this.close();
-                return reject("Admin Could Not Be Created");
-            }
-
+    // create user
+    async createUser(user: IUser) {
+        try {
+            const db = await this.connect();
+            const collection = db.collection<IUser>('users');
+            const result = await collection.insertOne(user);
             await this.close();
-            resolve(`Admin ${username} Created Successfully`);
-        });
-    }
-
-    async login(
-        username: string,
-        password: string
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let admin = await this.db.collection('admins').findOne({ username }).catch(err => {
-                reject(err);
-            });
-
-            if(!admin) {
-                await this.close();
-                return;
-            }
-
-            if(admin.password !== password) {
-                await this.close();
-                return reject("Incorrect Password");
-            }
-
+            console.log("Inserted User: ", result.insertedId);
+            return result.insertedId;
+        } catch (err) {
+            console.log("Error: ", err);
             await this.close();
-            resolve(`Admin ${username} Logged In Successfully`);
-        });
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
-
-    async deleteAdmin(
-        username: string
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
+    
+    // update user
+    async updateUser(user: IUser) {
+        try {
+            const db = await this.connect();
+            const collection = db.collection<IUser>('users');
+    
+            // determine if user exists
+            const exists = await collection.findOne({ _id: user._id });
+            if (!exists) {
+                console.log("User does not exist");
                 await this.close();
-                return reject("No DB Connection");
+                throw new Error("User does not exist");
             }
-
-            let admin = await this.db.collection('admins').findOne({ username }).catch(err => {
-                reject(err);
-            });
-
-            if(!admin) {
-                await this.close();
-                return;
-            }
-
-            let result = await this.db.collection('admins').deleteOne({ username }).catch(err => {
-                reject(err);
-            });
-
-            if(!result) {
-                await this.close();
-                return;
-            }
-
+    
+            // update user
+            const { _id, ...userWithoutId } = user; // remove _id from user object
+            const result = await collection.updateOne({ _id: user._id }, { $set: userWithoutId });
             await this.close();
-            resolve(`Admin ${username} Deleted Successfully`);
-        });
-    }
-
-    async updateAdmin(
-        username: string,
-        password: string
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let admin = await this.db.collection('admins').findOne({ username }).catch(err => {
-                reject(err);
-            });
-
-            if(!admin) {
-                await this.close();
-                return;
-            }
-
-            let result = await this.db.collection('admins').updateOne({ username }, { $set: { password } }).catch(err => {
-                reject(err);
-            });
-
-            if(!result) {
-                await this.close();
-                return;
-            }
-
+            console.log("Updated User: ", result.modifiedCount);
+            return result.modifiedCount;
+        } catch (err) {
+            console.log("Error: ", err);
             await this.close();
-            resolve(`Admin ${username} Updated Successfully`);
-        });
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
-
-    // Registry
-
-    async createChild(
-        child: Child
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let result = await this.db.collection('registry').insertOne(child).catch(err => {
-                reject(err);
-            });
-
-            if(!result) {
-                await this.close();
-                return;
-            }
-
-            await this.close();
-            resolve(`Child ${child.first_name} ${child.last_name} Created Successfully`);
-        });
-    }
-
-    async createChildren(
-        children: Child[]
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let result = await this.db.collection('registry').insertMany(children).catch(err => {
-                reject(err);
-            });
-
-            if(!result) {
-                await this.close();
-                return;
-            }
-
-            await this.close();
-            resolve(`Children Created Successfully`);
-        });
-    }
-
-    // sounds a little dark, but bear with me... 🤣
-    async deleteChild(
-        id: string
-    ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
+    
+    // delete user
+    async deleteUser(user: IUser) {
+        try {
+            const db = await this.connect();
+            const collection = db.collection<IUser>('users');
             
-            // find child
-            let found_child = await this.db.collection('registry').findOne({ id });
-            console.log(found_child);
-            // delete child
-            await this.db.collection('registry').deleteOne({ id });
-            // let result = await this.db.collection('registry').deleteOne({ id: child.id }).catch(err => {
-            //     reject(err);
-            // });
-
-            // if(!result || result.deletedCount === 0) {
-            //     await this.close();
-            //     return;
-            // }
-
+            // determine if user exists
+            const userExists = await collection.findOne({ _id: user._id });
+            if (!userExists) {
+                console.log("User does not exist");
+                await this.close();
+                throw new Error("User does not exist");
+            } 
+    
+            // delete user
+            const result = await collection.deleteOne({ _id: user._id });
             await this.close();
-            resolve('nice')
-            // resolve(`Child ${child.first_name} ${child.last_name} Deleted Successfully`);
-        });
+            console.log("Deleted User: ", result.deletedCount);
+            return result.deletedCount;
+        } catch (err) {
+            console.log("Error: ", err);
+            await this.close();
+            throw err; // rethrow the error to be handled by the caller
+        }
+    }
+    
+    // login
+    async login(
+        LoginCredentials: LoginCredentials
+    ): Promise<Omit<IUser, "password">> {
+        try {
+            const db = await this.connect();
+            const collection = db.collection<IUser>('users');
+    
+            // determine if user exists
+            const user = await collection.findOne<IUser>({ username: LoginCredentials.username });
+            await this.close();
+
+            if (!user) {
+                console.log("User does not exist");
+                throw new Error("User does not exist");
+            }
+    
+            // check password
+            if (user.password !== LoginCredentials.password) {
+                console.log("Incorrect Password");
+                throw new Error("Incorrect Password");
+            }
+            const { password, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        } catch (err) { // handle errors
+            console.log("Error: ", err);
+            await this.close();
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
 
-    async deleteManyChildren(
-        children: Child[]
+    // edit user spacial data
+    async updateSpacial(
+        spacial: ISpacial,
+        _id: any  // user id
     ) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if(!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let result = await this.db.collection('registry').deleteMany(children).catch(err => {
-                reject(err);
-            });
-
-            if(!result || result.deletedCount === 0) {
-                await this.close();
-                return;
-            }
-
+        try {
+            const db = await this.connect();
+            const collection = db.collection<IUser>('users');
+            // update user
+            const result = await collection.updateOne({ _id }, { $set: { lastSpacial: spacial } });
             await this.close();
-            resolve(`Children Deleted Successfully`);
-        });
+            console.log("Updated User Spacial: ", result.modifiedCount);
+            return true;
+        } catch (err) {
+            console.log("Error: ", err);
+            await this.close();
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
 
-    async updateChild(newChild: Child) {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if (!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-    
-            let foundChild = await this.db.collection('registry').findOne({ id: newChild.id }).catch(err => {
-                reject(err);
-            });
-    
-            if(!foundChild) {
-                await this.close();
-                return;
-            }
-    
-            // Create a copy of newChild without the '_id' field
-            const updateData: any = {...newChild};
-            delete updateData._id;  // Remove the _id field
-    
-            let result = await this.db.collection('registry').updateOne({ id: newChild.id }, { $set: updateData }).catch(err => {
-                reject(err);
-            });
-    
-            if(!result) {
-                await this.close();
-                return;
-            }
-    
+    // get spacial data
+    async getSpacial(
+        _id: any  // user id
+    ) {
+        try {
+            const db = await this.connect();
+            const users = db.collection<IUser>('users');
+            const user = await users.findOne<IUser>({ _id });
             await this.close();
-            resolve(`Child ${foundChild.first_name} ${foundChild.last_name} Updated Successfully`);
-        });
-    }
-    
-
-    // GETTERS
-
-    async getRegistry() {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if(!this.db) {
-                await this.close();
-                return reject("No DB Connection");
+            if (!user) {
+                console.log("User does not exist");
+                throw new Error("User does not exist");
             }
-
-            let result = await this.db.collection('registry').find().toArray().catch(err => {
-                reject(err);
-            });
-
-            if(!result) {
-                await this.close();
-                return;
-            }
-
+            return user.lastSpacial;
+        } catch (err) {
+            console.log("Error: ", err);
             await this.close();
-            resolve(result);
-        });
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
 
-    async getAdmins() {
-        return new Promise(async (resolve, reject) => {
-            await this.connect();
-            if(!this.db) {
-                await this.close();
-                return reject("No DB Connection");
-            }
-
-            let result = await this.db.collection('admins').find().toArray().catch(err => {
-                reject(err);
-            });
-
-            if(!result) {
-                await this.close();
-                return;
-            }
-
+    // get facial data
+    async getFacial(
+        _id: any  // user id
+    ) {
+        try {
+            const db = await this.connect();
+            const collection = db.collection<ISpacial>('facial');
+            const result = await collection.findOne<ISpacial>({ _id });
             await this.close();
-            resolve(result);
-        });
+            if (!result) {
+                console.log("Facial does not exist");
+                throw new Error("Facial does not exist");
+            }
+            console.log("Got Facial: ", result);
+            return result;
+        } catch (err) {
+            console.log("Error: ", err);
+            await this.close();
+            throw err; // rethrow the error to be handled by the caller
+        }
     }
 }
  

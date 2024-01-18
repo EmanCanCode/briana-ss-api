@@ -1,5 +1,5 @@
 {
-  "name": "sunday-school-api",
+  "name": "dl-api",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
@@ -14,15 +14,20 @@
     "@types/node": "^14.14.35",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
+    "canvas": "^2.11.2",
     "cors": "^2.8.5",
-    "ethers": "^5.7.2",
+    "dotenv": "^16.3.1",
+    "eciesjs": "^0.4.6",
+    "ethers": "^6.10.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "face-api.js": "^0.22.2",
     "frameguard": "^4.0.0",
     "fs-extra": "^10.0.0",
     "mongodb": "^6.3.0",
     "mysql": "^2.18.1",
     "node-cron": "^3.0.0",
+    "openai": "^4.24.7",
     "whatwg-url": "^11.0.0"
   },
   "devDependencies": {

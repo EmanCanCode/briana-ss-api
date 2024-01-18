@@ -1,6 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { Mongo } from './mongo';
-import { ethers } from 'ethers';
+import { AI } from './ai';
+import { ISpacial } from '../types/interfaces';
 
 
 export class GET {
@@ -36,32 +37,22 @@ export class GET {
             })
 
             switch(urlArr[0]) {
-                case "init": {
-                    const registry = await this.mongo.getRegistry().catch(err => {
-                        res.status(500).send({ success: false, err });
-                    });
-                    
-                    if (registry) {
-                        const admins = await this.mongo.getAdmins().catch(err => {
-                            res.status(500).send({ success: false, err });
-                        });
-                        if (admins) {
-                            res.status(200).send({ registry, admins });
-                        }
-                    }
+                case "test": {
+                    const ai = new AI();
+                    const last: ISpacial = { // brooklyn ny
+                        lat: "40.652601",
+                        lng: "-73.949721",
+                        time: "2023-06-18T00:00:00"
+                    };
+                    const current: ISpacial = {
+                        lat: "34.898622",
+                        lng: "-117.024431",
+                        time: "2023-06-18T08:00:00"
+                    };
+                    await ai.isReasonableDistanceTraveled(last, current);
+                    res.status(200).send({ response: "ok" });
                     break;
                 }
-                case "admins": {
-                    const admins = await this.mongo.getAdmins().catch(err => {
-                        console.trace(err);
-                        res.status(500).send({ success: false, err });
-                    });
-                    if (admins) {
-                        res.status(200).send({ admins });
-                    }
-                    break;
-                }
-                
             }
 
         }
