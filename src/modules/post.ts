@@ -1,9 +1,9 @@
 import { Express, Request, response, Response } from "express";
-import { Mongo } from "./mongo";
+// import { Mongo } from "./mongo";
 
 
 export class POST {
-    mongo = new Mongo();
+    // mongo = new Mongo();
 
     constructor(private app: Express) {
         this.app.post('*', (req, res) => {
@@ -36,76 +36,12 @@ export class POST {
 
         // Get Initial Assets ALWAYS called first.
         switch(urlArr[0]) {
-            case "register": {
-                try {
-                    let result = await this.mongo.createChildren(POST.children);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
+            case "test": {
+                res.status(200).send({ response: 'okay' });
                 break;
             }
-            case 'login': {
-                try {
-                    let result = await this.mongo.login(POST.username, POST.password);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
-                break;
-            }
-            case 'deleteChildren': {
-                try {
-                    let result = await this.mongo.deleteManyChildren(POST.children);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
-                break;
-            }
-            case 'deleteChild': {
-                try {
-                    console.log({ post: POST })
-                    let result = await this.mongo.deleteChild(POST.id);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
-                break;
-            }
-            case 'updateChild': {
-                try {
-                    let result = await this.mongo.updateChild(POST.child);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
-                break;
-            }
-            case 'createAdmin': {
-                try {
-                    const { username, password } = POST.admin;
-                    let result = await this.mongo.createAdmin(username, password);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
-                break;
-            }
-            case 'deleteAdmin': {
-                try {
-                    let result = await this.mongo.deleteAdmin(POST.username);
-                    res.status(200).send({ success: true, result });
-                } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
+            default: {
+                res.status(404).send({ response: 'Not Found' });
                 break;
             }
         }

@@ -5,7 +5,6 @@ import {MongoClient, Db} from 'mongodb';
 import { Child } from '../types/interfaces';
 import { Parent } from '../types/interfaces';
 
-// const uri = "mongodb+srv://dtaghavi:Science101\!\!\!@rarified.ftvyf.mongodb.net/Rarified?retryWrites=true&w=majority";
 const uri = 'mongodb+srv://eman:3ll1pt1cCvrv%23@sundayschool.hrlqdx4.mongodb.net/';
 
 const client = new MongoClient(uri);

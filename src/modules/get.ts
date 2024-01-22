@@ -1,10 +1,10 @@
 import { Express, Request, Response } from 'express';
-import { Mongo } from './mongo';
+// import { Mongo } from './mongo';
 import { ethers } from 'ethers';
 
 
 export class GET {
-    mongo = new Mongo();
+    // mongo = new Mongo();
     constructor(private app: Express) {
         this.app.get("*", (req, res) => {
             this.proccess(req, res);
@@ -36,32 +36,14 @@ export class GET {
             })
 
             switch(urlArr[0]) {
-                case "init": {
-                    const registry = await this.mongo.getRegistry().catch(err => {
-                        res.status(500).send({ success: false, err });
-                    });
-                    
-                    if (registry) {
-                        const admins = await this.mongo.getAdmins().catch(err => {
-                            res.status(500).send({ success: false, err });
-                        });
-                        if (admins) {
-                            res.status(200).send({ registry, admins });
-                        }
-                    }
+                case "test": {
+                    res.status(200).send({ response: 'okay' });
                     break;
                 }
-                case "admins": {
-                    const admins = await this.mongo.getAdmins().catch(err => {
-                        console.trace(err);
-                        res.status(500).send({ success: false, err });
-                    });
-                    if (admins) {
-                        res.status(200).send({ admins });
-                    }
+                default: {
+                    res.status(404).send({ response: 'Not Found' });
                     break;
                 }
-                
             }
 
         }
