@@ -1,7 +1,7 @@
 
 import fs from 'fs-extra';
 const path = require('path');
-import {MongoClient, Db} from 'mongodb';
+import { MongoClient, Db } from 'mongodb';
 import { Child } from '../types/interfaces';
 import { Parent } from '../types/interfaces';
 
@@ -15,13 +15,13 @@ export class Mongo {
     db?: Db;
     ready: boolean = false;
 
-    constructor() {}
+    constructor() { }
 
     // Connects to server returns promise containing a reference to the database.
     connect(): Promise<Db> {
         return new Promise((resolve, reject) => {
-            
-            if(!this.db) {
+
+            if (!this.db) {
                 client.connect().then(() => {
                     console.log("Connected correctly to server");
                     this.db = client.db(this.dbName);
@@ -34,7 +34,7 @@ export class Mongo {
             } else {
                 resolve(this.db);
             }
-        }) 
+        })
     };
 
     // Closes DB connection
@@ -75,13 +75,13 @@ export class Mongo {
                 reject(err);
             });
 
-            if(admin) {
+            if (admin) {
                 await this.close();
                 return;
             }
 
             let result = await this.db.collection('admins').insertOne({ username, password });
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return reject("Admin Could Not Be Created");
             }
@@ -106,12 +106,12 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!admin) {
+            if (!admin) {
                 await this.close();
                 return;
             }
 
-            if(admin.password !== password) {
+            if (admin.password !== password) {
                 await this.close();
                 return reject("Incorrect Password");
             }
@@ -135,7 +135,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!admin) {
+            if (!admin) {
                 await this.close();
                 return;
             }
@@ -144,7 +144,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return;
             }
@@ -169,7 +169,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!admin) {
+            if (!admin) {
                 await this.close();
                 return;
             }
@@ -178,7 +178,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return;
             }
@@ -204,7 +204,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return;
             }
@@ -228,7 +228,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return;
             }
@@ -248,7 +248,7 @@ export class Mongo {
                 await this.close();
                 return reject("No DB Connection");
             }
-            
+
             // find child
             let found_child = await this.db.collection('registry').findOne({ id });
             console.log(found_child);
@@ -274,16 +274,17 @@ export class Mongo {
     ) {
         return new Promise(async (resolve, reject) => {
             await this.connect();
-            if(!this.db) {
+            if (!this.db) {
                 await this.close();
                 return reject("No DB Connection");
             }
 
-            let result = await this.db.collection('registry').deleteMany(children).catch(err => {
+            const idsToDelete = children.map(child => child.id);
+            let result = await this.db.collection('registry').deleteMany({ id: { $in: idsToDelete } }).catch(err => {
                 reject(err);
             });
 
-            if(!result || result.deletedCount === 0) {
+            if (!result || !result.deletedCount) {
                 await this.close();
                 return;
             }
@@ -300,41 +301,41 @@ export class Mongo {
                 await this.close();
                 return reject("No DB Connection");
             }
-    
+
             let foundChild = await this.db.collection('registry').findOne({ id: newChild.id }).catch(err => {
                 reject(err);
             });
-    
-            if(!foundChild) {
+
+            if (!foundChild) {
                 await this.close();
                 return;
             }
-    
+
             // Create a copy of newChild without the '_id' field
-            const updateData: any = {...newChild};
+            const updateData: any = { ...newChild };
             delete updateData._id;  // Remove the _id field
-    
+
             let result = await this.db.collection('registry').updateOne({ id: newChild.id }, { $set: updateData }).catch(err => {
                 reject(err);
             });
-    
-            if(!result) {
+
+            if (!result) {
                 await this.close();
                 return;
             }
-    
+
             await this.close();
             resolve(`Child ${foundChild.first_name} ${foundChild.last_name} Updated Successfully`);
         });
     }
-    
+
 
     // GETTERS
 
     async getRegistry() {
         return new Promise(async (resolve, reject) => {
             await this.connect();
-            if(!this.db) {
+            if (!this.db) {
                 await this.close();
                 return reject("No DB Connection");
             }
@@ -343,7 +344,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return;
             }
@@ -356,7 +357,7 @@ export class Mongo {
     async getAdmins() {
         return new Promise(async (resolve, reject) => {
             await this.connect();
-            if(!this.db) {
+            if (!this.db) {
                 await this.close();
                 return reject("No DB Connection");
             }
@@ -365,7 +366,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if(!result) {
+            if (!result) {
                 await this.close();
                 return;
             }
@@ -375,4 +376,3 @@ export class Mongo {
         });
     }
 }
- 
