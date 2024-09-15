@@ -1,6 +1,5 @@
 import { Express, Request, Response } from 'express';
 import { Mongo } from './mongo';
-import { ethers } from 'ethers';
 
 
 export class GET {
@@ -61,7 +60,6 @@ export class GET {
                     }
                     break;
                 }
-                
             }
 
         }

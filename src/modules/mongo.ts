@@ -6,10 +6,9 @@ import { Child } from '../types/interfaces';
 import { Parent } from '../types/interfaces';
 
 const uri = 'mongodb+srv://eman:3ll1pt1cCvrv%23@sundayschool.hrlqdx4.mongodb.net/';
-
 const client = new MongoClient(uri);
 
-
+// okay the only reason why i use try catches is so i can go faster, i should update to get more specific errors and handle them better
 export class Mongo {
     dbName: string = "SundaySchool";
     db?: Db;
@@ -17,11 +16,10 @@ export class Mongo {
 
     constructor() { }
 
-    // Connects to server returns promise containing a reference to the database.
     connect(): Promise<Db> {
         return new Promise((resolve, reject) => {
-
-            if (!this.db) {
+            
+            if(!this.db) {
                 client.connect().then(() => {
                     console.log("Connected correctly to server");
                     this.db = client.db(this.dbName);
@@ -34,7 +32,7 @@ export class Mongo {
             } else {
                 resolve(this.db);
             }
-        })
+        }) 
     };
 
     // Closes DB connection
@@ -75,13 +73,13 @@ export class Mongo {
                 reject(err);
             });
 
-            if (admin) {
+            if(admin) {
                 await this.close();
                 return;
             }
 
             let result = await this.db.collection('admins').insertOne({ username, password });
-            if (!result) {
+            if(!result) {
                 await this.close();
                 return reject("Admin Could Not Be Created");
             }
@@ -106,12 +104,12 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!admin) {
+            if(!admin) {
                 await this.close();
                 return;
             }
 
-            if (admin.password !== password) {
+            if(admin.password !== password) {
                 await this.close();
                 return reject("Incorrect Password");
             }
@@ -135,7 +133,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!admin) {
+            if(!admin) {
                 await this.close();
                 return;
             }
@@ -144,7 +142,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!result) {
+            if(!result) {
                 await this.close();
                 return;
             }
@@ -169,7 +167,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!admin) {
+            if(!admin) {
                 await this.close();
                 return;
             }
@@ -178,7 +176,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!result) {
+            if(!result) {
                 await this.close();
                 return;
             }
@@ -204,7 +202,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!result) {
+            if(!result) {
                 await this.close();
                 return;
             }
@@ -228,7 +226,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!result) {
+            if(!result) {
                 await this.close();
                 return;
             }
@@ -248,7 +246,7 @@ export class Mongo {
                 await this.close();
                 return reject("No DB Connection");
             }
-
+            
             // find child
             let found_child = await this.db.collection('registry').findOne({ id });
             console.log(found_child);
@@ -325,9 +323,8 @@ export class Mongo {
             }
 
             await this.close();
-            resolve(`Child ${foundChild.first_name} ${foundChild.last_name} Updated Successfully`);
-        });
-    }
+        }
+    )}
 
 
     // GETTERS
@@ -357,7 +354,7 @@ export class Mongo {
     async getAdmins() {
         return new Promise(async (resolve, reject) => {
             await this.connect();
-            if (!this.db) {
+            if(!this.db) {
                 await this.close();
                 return reject("No DB Connection");
             }
@@ -366,7 +363,7 @@ export class Mongo {
                 reject(err);
             });
 
-            if (!result) {
+            if(!result) {
                 await this.close();
                 return;
             }

@@ -12,6 +12,5 @@ export interface Parent {
     allergies: string;
     parent: Parent;
   }
-
-  export type Session = 'nursery' | 'younger_kids' | 'older_kids';
   
+  export type Session = 'nursery' | 'younger_kids' | 'older_kids';

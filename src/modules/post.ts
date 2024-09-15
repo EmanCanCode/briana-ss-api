@@ -1,10 +1,8 @@
 import { Express, Request, response, Response } from "express";
 import { Mongo } from "./mongo";
 
-
 export class POST {
     mongo = new Mongo();
-
     constructor(private app: Express) {
         this.app.post('*', (req, res) => {
             this.proccess(req, res);
@@ -72,16 +70,6 @@ export class POST {
                     let result = await this.mongo.deleteChild(POST.id);
                     res.status(200).send({ success: true, result });
                 } catch(err) {
-                    console.trace({ err });
-                    res.status(500).send({ success: false, err });
-                }
-                break;
-            }
-            case 'deleteAllChildren': {
-                try {
-                    let result = await this.mongo.deleteManyChildren(POST.children);
-                    res.status(200).send({ success: true, result });
-                } catch (err) {
                     console.trace({ err });
                     res.status(500).send({ success: false, err });
                 }
